@@ -1,0 +1,63 @@
+ One of my team member is building the yolomodel to detect persons and other person is doing hardware so in future if i want to integrate those two in this project by removing the present duplicate hardware what i have to do. And i also want to know is the db connected to my project now and are the tables created?
+
+Let me verify the database question rather than answer from memory.
+
+  Ran 3 shell commands
+
+Backend is up and querying room_data, ac_status, alerts, recommendations. Let me prove all five tables functionally, including event_log.
+
+  Ran 2 shell commands
+
+Is the DB connected and are the tables created?
+
+Connected: yes. Tables: yes, all five. I just verified each one reads and writes:
+
+┌─────────────────┬────────────────────────────────────────────────────────┐
+│      Table      │                         Proof                          │
+├─────────────────┼────────────────────────────────────────────────────────┤
+│ room_data       │ temperature row stored and returned by /history        │
+├─────────────────┼────────────────────────────────────────────────────────┤
+│ recommendations │ recommended 25 °C persisted and served                 │
+├─────────────────┼────────────────────────────────────────────────────────┤
+│ ac_status       │ interval opened, ON / MANUAL / 00:00:02                │
+├─────────────────┼───────────────────────────────────────
+│ event_log       │ 3 rows returned by /logs                               │
+├─────────────────┼───────────────────────────────────────
+│ alerts          │ queried successfully (0 rows — no alert has fired yet) │
+└─────────────────┴───────────────────────────────────────
+                                                                                                                                               But read this carefully, because it will bite you:
+                                                                                                                                               It is H2 in memory, not MySQL. Hibernate recreates the fivry startup, and every restart wipes all your data. That'sfine for development. It is not fine for collecting the calibration data your report needs.                                                    
+MySQL is fully prepared — profile, driver, and db/mysql-schema.sql — but MySQL isn't installed on this machine (no mysql on PATH). Before you  collect any real data:
+                                                                                                                                               mysql -u root -p -e "CREATE DATABASE smartroom CHARACTER S
+mysql -u root -p smartroom < backend\src\main\resources\db\mysql-schema.sql                                                                    
+$env:MYSQL_USER="root"; $env:MYSQL_PASSWORD="yourpassword"                                                                                     java -jar target\backend-0.0.1-SNAPSHOT.jar --spring.profi
+                                                                                                                                               Do this before Step 7 calibration, not after. Losing a dayo a restart is a painful way to learn it.
+                                                                                                                                               ---
+Integrating the real YOLO model and hardware                                                                                                   
+There is nothing to remove. This is the important part: the simulator is a standalone Python script in tools/. No backend or frontend code impoit, references it, or knows it exists. You stop running it
+                                                                                                                                               The backend was built against HTTP contracts, not against  write to the same two endpoints.
+                                                                                                                                               Give your YOLO teammate this
+                                                                                                                                               requests.post("http://<PC-LAN-IP>:8080/api/detection",
+    headers={"X-API-Key": "<your-key>"},                                                                                                           json={"roomId": "ROOM101", "personCount": 24, "source"
+                                                                                                                                               - Every 10 seconds
+- personCount must be the median of a 10-second deque, never a single frame                                                                    - Wrap cv2.VideoCapture in reconnect logic — the MJPEG str
+                                                                                                                                               Give your hardware teammate this
+                                                                                                                                               POST http://<PC-LAN-IP>:8080/api/room/data
+X-API-Key: <your-key>                                                                                                                          {"roomId":"ROOM101","temperature":21.5,"humidity":48.0,"ve
+                                                                                                                                               - Every 30 seconds, from a millis() timer — never inside tad blocks ~25 ms and will stutter the video)
+- Optional recordedAt for buffered replay after a Wi-Fi drop; the backend already handles back-dated samples correctly                         
+Then change three settings                                                                                                                     
+smartroom.security.api-key=<something-real>          # share with both teammates                                                               smartroom.dashboard.camera-stream-url=http://192.168.1.50:
+                                                                                                                                               ---
+Six things that will actually cost you time                                                                                                    
+1. Windows Firewall blocks inbound port 8080 by default. The ESP32 will fail silently and you'll blame the firmware. This is the single biggesttime sink — fix it first:
+New-NetFirewallRule -DisplayName "Smart Room backend" -Direction Inbound -LocalPort 8080 -Protocol TCP -Action Allow                           1. (needs an admin terminal)
+2. Producers must use your PC's LAN IP, not localhost. localhost on the ESP32 means the ESP32 itself. Get it with ipconfig.                    3. ventTemperature is not optional. Your hardware teammatethe AC supply vent, not just the DHT22. Without it, ACstatus never transitions, runtime never accumulates, and the cold-room alert can never fire — which is half the project. This is easy to overlobecause the DHT22 feels like "the temperature sensor."
+4. Both producers must send the identical roomId. A typo gives you two rooms, each with half the data, and a dashboard showing — for the other half.
+5. Give the ESP32 a DHCP reservation or static IP, or the camera URL changes on every reboot.                                                  6. Keep the simulator. It's your diagnostic: if the real pimulator and see whether the backend still works. Thattells you instantly whether the bug is yours or theirs.                                                                                        
+---                                                                                                                                            Suggested integration order
+                                                                                                                                               Bring one producer online at a time — don't do both at once is broken.
+                                                                                                                                               The wrinkle: while you integrate one, the simulator posts t the real producer over the same field. Right now youroptions are to run the simulator or not.                                                                                                       
+If it'd help, I can add --sensors-only and --detection-only flags so you can simulate one half while the real hardware drives the other. Small change to the one script, nothing else touched — say the w
+
+✻ Crunched for 2m 40s

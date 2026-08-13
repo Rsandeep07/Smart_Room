@@ -1,0 +1,26 @@
+# YOLO people detection
+tools/people_detection/venv/
+tools/people_detection/*.pt
+# Build output
+backend/target/
+frontend/dist/
+frontend/node_modules/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+
+# Local overrides. Keep the shared ingest key and any database credentials out of
+# version control - the committed application.properties carries development defaults only.
+backend/src/main/resources/application-local.properties
+.env
+.env.local

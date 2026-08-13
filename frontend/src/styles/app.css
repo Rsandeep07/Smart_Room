@@ -1,0 +1,1088 @@
+/* ==========================================================================
+   Reset and page shell
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-app);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+a {
+  color: var(--accent-blue);
+}
+
+/* Visible focus everywhere: this screen is operated at a reception desk, sometimes
+   by keyboard, and the default outline disappears against the dark surface. */
+:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.app {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+/* ==========================================================================
+   Sidebar
+   ========================================================================== */
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border);
+  padding: 18px 12px 16px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 8px 22px;
+}
+
+.sidebar__brand-mark {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--wash-good);
+  color: var(--accent-cool);
+  flex: 0 0 auto;
+}
+
+.sidebar__brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.sidebar__brand-title {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.sidebar__brand-sub {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sidebar__link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  text-align: left;
+  width: 100%;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.sidebar__link:hover {
+  background: var(--surface-2);
+  color: var(--text-primary);
+}
+
+.sidebar__link--active {
+  background: var(--surface-2);
+  color: var(--text-primary);
+  font-weight: 600;
+  box-shadow: inset 2px 0 0 var(--status-good);
+}
+
+.sidebar__link-badge {
+  margin-left: auto;
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--status-critical);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  line-height: 18px;
+}
+
+.sidebar__footer {
+  margin-top: auto;
+  padding: 12px 10px 0;
+  border-top: 1px solid var(--border);
+}
+
+.sidebar__clock {
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.sidebar__date {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.sidebar__theme {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.sidebar__theme:hover {
+  background: var(--surface-2);
+  color: var(--text-primary);
+}
+
+/* ==========================================================================
+   Main column and top bar
+   ========================================================================== */
+
+.main {
+  min-width: 0;
+  padding: 18px 22px 28px;
+}
+
+.topbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.topbar__title {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.topbar__subtitle {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.topbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.status-pill--good {
+  background: var(--wash-good);
+  border-color: rgba(12, 163, 12, 0.35);
+  color: var(--status-good);
+}
+
+.status-pill--warning {
+  background: var(--wash-warning);
+  border-color: rgba(250, 178, 25, 0.35);
+  color: var(--status-warning);
+}
+
+.status-pill--critical {
+  background: var(--wash-critical);
+  border-color: rgba(208, 59, 59, 0.4);
+  color: var(--status-critical);
+}
+
+.status-pill__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: 0 0 auto;
+}
+
+.icon-button {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-1);
+  color: var(--text-secondary);
+  position: relative;
+}
+
+.icon-button:hover {
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+
+.icon-button__badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--status-critical);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+}
+
+.room-select {
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-1);
+  color: var(--text-primary);
+  font-size: 12px;
+}
+
+/* ==========================================================================
+   Card primitive
+   ========================================================================== */
+
+.card {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px 0;
+}
+
+.card__title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.card__subtitle {
+  margin: 1px 0 0;
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.card__tools {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.card__body {
+  padding: 12px 14px 14px;
+  flex: 1;
+  min-width: 0;
+}
+
+.card__body--flush {
+  padding: 0;
+}
+
+.card__link {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--accent-blue);
+  font-size: 12px;
+}
+
+/* ==========================================================================
+   Dashboard layout
+   ========================================================================== */
+
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+/* Camera feed beside a 3 x 2 block of tiles, in the 5 : 7 proportion of the design. */
+.dashboard__row-primary {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: var(--gap);
+  align-items: stretch;
+}
+
+/* Tiles keep their natural height and the camera card stretches to match them, rather
+   than the reverse. Stretching the tiles to a 16:9 camera left each one two thirds
+   empty. */
+.dashboard__tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: min-content;
+  gap: var(--gap);
+}
+
+/* Alert banner beside the current recommendation, 7 : 5. */
+.dashboard__row-alert {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: var(--gap);
+  align-items: stretch;
+}
+
+/* Two charts and the log panel. */
+.dashboard__row-charts {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr) minmax(0, 1.35fr);
+  gap: var(--gap);
+  align-items: stretch;
+}
+
+@media (max-width: 1280px) {
+  .dashboard__row-charts {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .dashboard__row-charts > :last-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 1080px) {
+  .app {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: static;
+    height: auto;
+  }
+
+  .dashboard__row-primary,
+  .dashboard__row-alert,
+  .dashboard__row-charts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dashboard__row-charts > :last-child {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 720px) {
+  .dashboard__tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .main {
+    padding: 14px;
+  }
+}
+
+/* ==========================================================================
+   Stat tiles
+   ========================================================================== */
+
+.tile {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.tile__label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: none;
+}
+
+.tile__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.tile__icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: var(--surface-2);
+  flex: 0 0 auto;
+}
+
+.tile__value {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  min-width: 0;
+}
+
+/* Proportional figures, not tabular: these are large standalone numbers and
+   equal-width digits make a value like 121 look loose at this size. */
+.tile__number {
+  font-size: 25px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+
+.tile__unit {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.tile__hint {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin-top: -2px;
+}
+
+.tile__hint--warning {
+  color: var(--status-warning);
+}
+
+.tile--stale {
+  border-color: rgba(250, 178, 25, 0.3);
+}
+
+.tile__stale-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--status-warning);
+}
+
+/* ==========================================================================
+   Live camera feed
+   ========================================================================== */
+
+.feed {
+  position: relative;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #05070a;
+  flex: 1;
+  min-height: 178px;
+  display: grid;
+  place-items: center;
+}
+
+.card--feed .card__body {
+  display: flex;
+  flex-direction: column;
+}
+
+.feed__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.feed__badges {
+  position: absolute;
+  inset: 10px 10px auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.feed__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #fff;
+  backdrop-filter: blur(2px);
+}
+
+.feed__badge--live {
+  background: rgba(208, 59, 59, 0.9);
+}
+
+.feed__badge--offline {
+  background: rgba(60, 66, 74, 0.92);
+}
+
+.feed__badge--count {
+  background: rgba(12, 163, 12, 0.9);
+}
+
+.feed__pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fff;
+  animation: feed-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes feed-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feed__pulse {
+    animation: none;
+  }
+}
+
+.feed__placeholder {
+  padding: 24px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 12.5px;
+  max-width: 42ch;
+}
+
+.feed__placeholder code {
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  word-break: break-all;
+}
+
+/* ==========================================================================
+   Alert banner and recommendation
+   ========================================================================== */
+
+.alert-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 13px 14px;
+  border-radius: var(--radius-md);
+  background: var(--wash-warning);
+  border: 1px solid rgba(250, 178, 25, 0.35);
+  height: 100%;
+}
+
+.alert-banner__icon {
+  color: var(--status-warning);
+  flex: 0 0 auto;
+  margin-top: 1px;
+}
+
+.alert-banner__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.alert-banner__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--status-warning);
+}
+
+.alert-banner__time {
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--text-muted);
+}
+
+.alert-banner__message {
+  margin: 3px 0 0;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.alert-banner__dismiss {
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  padding: 2px;
+  border-radius: 4px;
+  flex: 0 0 auto;
+}
+
+.alert-banner__dismiss:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.alert-banner--placeholder {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  align-items: center;
+}
+
+.alert-banner--placeholder .alert-banner__icon {
+  color: var(--status-good);
+}
+
+.recommendation {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 13px 14px;
+  border-radius: var(--radius-md);
+  background: var(--wash-good);
+  border: 1px solid rgba(12, 163, 12, 0.3);
+  height: 100%;
+}
+
+.recommendation__icon {
+  color: var(--status-good);
+  flex: 0 0 auto;
+  margin-top: 1px;
+}
+
+.recommendation__label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--status-good);
+}
+
+.recommendation__text {
+  margin: 3px 0 0;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.recommendation__meta {
+  margin: 6px 0 0;
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   Charts
+   ========================================================================== */
+
+.chart {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.chart__axis-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  padding-left: 2px;
+}
+
+/* Sized to include the x-axis band, so the axis labels are never cut off and the
+   card never grows a nested scrollbar. */
+.chart__plot {
+  width: 100%;
+  height: 168px;
+}
+
+.chart__footnote {
+  font-size: 11px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.chart__current {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+}
+
+.chart__swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  flex: 0 0 auto;
+}
+
+.chart__empty {
+  height: 168px;
+  display: grid;
+  place-items: center;
+  color: var(--text-muted);
+  font-size: 12px;
+  text-align: center;
+  padding: 0 12px;
+}
+
+.tooltip {
+  background: var(--surface-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 7px 9px;
+  font-size: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+.tooltip__time {
+  color: var(--text-muted);
+  font-size: 11px;
+  margin-bottom: 3px;
+}
+
+.tooltip__value {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* Segmented control used for the shared time range. */
+.segmented {
+  display: inline-flex;
+  padding: 2px;
+  gap: 2px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-2);
+}
+
+.segmented__option {
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+
+.segmented__option[aria-pressed='true'] {
+  background: var(--surface-3);
+  color: var(--text-primary);
+}
+
+.toggle-link {
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 11px;
+  padding: 3px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.toggle-link:hover,
+.toggle-link[aria-pressed='true'] {
+  background: var(--surface-2);
+  color: var(--text-primary);
+}
+
+/* ==========================================================================
+   Data table (the table-view twin of every chart)
+   ========================================================================== */
+
+.data-table-wrap {
+  max-height: 190px;
+  overflow: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.data-table th,
+.data-table td {
+  text-align: left;
+  padding: 5px 8px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.data-table th {
+  position: sticky;
+  top: 0;
+  background: var(--surface-1);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 11px;
+}
+
+/* Tabular figures here, and only here: these are columns of numbers that must line up. */
+.data-table td {
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.data-table td.is-gap {
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   Logs
+   ========================================================================== */
+
+.logs {
+  display: flex;
+  flex-direction: column;
+  max-height: 210px;
+  overflow: auto;
+}
+
+.logs__row {
+  display: grid;
+  grid-template-columns: 62px 12px minmax(0, 1fr);
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.logs__row:last-child {
+  border-bottom: 0;
+}
+
+.logs__time {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.logs__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  align-self: center;
+}
+
+.logs__dot--info {
+  background: var(--accent-blue);
+}
+
+.logs__dot--warning {
+  background: var(--status-warning);
+}
+
+.logs__message {
+  font-size: 12px;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.empty-state {
+  padding: 22px 14px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+/* ==========================================================================
+   Secondary views
+   ========================================================================== */
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--gap);
+}
+
+.definition-list {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 7px 16px;
+  margin: 0;
+  font-size: 12.5px;
+}
+
+.definition-list dt {
+  color: var(--text-secondary);
+}
+
+.definition-list dd {
+  margin: 0;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.note {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.button-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.button {
+  padding: 7px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.button:hover:not(:disabled) {
+  border-color: var(--border-strong);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.button--primary {
+  background: var(--accent-blue);
+  border-color: transparent;
+  color: #fff;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--surface-2);
+  color: var(--text-secondary);
+}
+
+.badge--good {
+  background: var(--wash-good);
+  color: var(--status-good);
+}
+
+.badge--warning {
+  background: var(--wash-warning);
+  color: var(--status-warning);
+}
+
+/* ==========================================================================
+   Connection banner
+   ========================================================================== */
+
+.offline-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  margin-bottom: var(--gap);
+  border-radius: var(--radius-md);
+  background: var(--wash-critical);
+  border: 1px solid rgba(208, 59, 59, 0.4);
+  font-size: 12.5px;
+  color: var(--text-primary);
+}
+
+.offline-banner svg {
+  color: var(--status-critical);
+  flex: 0 0 auto;
+}
+
+/*
+ * Refetch treatment: hold the previous render at reduced opacity rather than
+ * dropping to a skeleton. A skeleton flash every five seconds would make the whole
+ * dashboard strobe and would move the layout under the operator's cursor.
+ */
+.is-refreshing {
+  opacity: 0.72;
+  transition: opacity 0.15s ease;
+}
