@@ -9,31 +9,59 @@ from ultralytics import YOLO
 
 
 # ============================================================
-# Configuration
+# CONFIGURATION
 # ============================================================
 
+# YOLO model
 MODEL_PATH = "yolov8n.pt"
 
-CAMERA_INDEX = 0
+# ============================================================
+# EXTERNAL IP CAMERA
+# ============================================================
+# IMPORTANT:
+# This is now the CAMERA INPUT.
+# We are NOT using the laptop webcam.
+#
+# Your local webcam stream:
+CAMERA_SOURCE = "http://localhost:8090/stream"
 
+
+# YOLO confidence
 CONFIDENCE_THRESHOLD = 0.5
 
-BACKEND_URL = "http://localhost:8080"
+
+# ============================================================
+# SPRING BOOT BACKEND
+# ============================================================
+
+BACKEND_URL = "http://localhost:8081"
 
 ROOM_ID = "ROOM101"
 
 API_KEY = "smart-room-dev-key"
 
+# Send person count every 3 seconds
 SEND_INTERVAL = 3
+
+
+# ============================================================
+# OUTPUT STREAM
+# ============================================================
 
 STREAM_HOST = "0.0.0.0"
 
-STREAM_PORT = 8090
+STREAM_PORT = 8091
 
 
 # ============================================================
-# YOLO
+# YOLO MODEL
 # ============================================================
+
+print()
+print("======================================")
+print(" Smart Room YOLO Camera Service")
+print("======================================")
+print()
 
 print("Loading YOLO model...")
 
@@ -43,17 +71,25 @@ print("YOLO model loaded successfully.")
 
 
 # ============================================================
-# Camera
+# CAMERA
 # ============================================================
 
-cap = cv2.VideoCapture(CAMERA_INDEX, cv2.CAP_DSHOW)
+print()
+print("Connecting to external camera...")
+print("Camera URL:", CAMERA_SOURCE)
+
+cap = cv2.VideoCapture(CAMERA_SOURCE)
 
 if not cap.isOpened():
-    raise RuntimeError("Could not open webcam")
+    raise RuntimeError(
+        f"Could not connect to external camera: {CAMERA_SOURCE}"
+    )
+
+print("External camera connected successfully.")
 
 
 # ============================================================
-# Shared data
+# SHARED DATA
 # ============================================================
 
 latest_frame = None
@@ -66,14 +102,14 @@ last_sent_time = 0
 
 
 # ============================================================
-# Flask application
+# FLASK APPLICATION
 # ============================================================
 
 app = Flask(__name__)
 
 
 # ============================================================
-# Send person count to Spring Boot
+# SEND PERSON COUNT TO SPRING BOOT
 # ============================================================
 
 def send_person_count(person_count):
@@ -123,7 +159,7 @@ def send_person_count(person_count):
 
 
 # ============================================================
-# Generate MJPEG stream
+# GENERATE MJPEG STREAM
 # ============================================================
 
 def generate_stream():
@@ -160,67 +196,86 @@ def generate_stream():
 
 
 # ============================================================
-# Video stream endpoint
+# VIDEO STREAM ENDPOINT
 # ============================================================
 
 @app.route("/stream")
 def stream():
 
     return Response(
+
         generate_stream(),
+
         mimetype="multipart/x-mixed-replace; boundary=frame"
     )
 
 
 # ============================================================
-# Status endpoint
+# STATUS ENDPOINT
 # ============================================================
 
 @app.route("/status")
 def status():
 
     return jsonify({
+
         "roomId": ROOM_ID,
+
         "personCount": last_person_count
+
     })
 
 
 # ============================================================
-# YOLO processing thread
+# YOLO PROCESSING
 # ============================================================
 
 def run_yolo():
 
     global latest_frame
+
     global last_person_count
+
     global last_sent_time
+
 
     while True:
 
+        # ----------------------------------------------------
+        # Read frame from external IP camera
+        # ----------------------------------------------------
+
         ret, frame = cap.read()
+
 
         if not ret:
 
-            print("Could not read frame")
+            print(
+                "Could not read frame from external camera."
+            )
 
-            time.sleep(0.1)
+            time.sleep(1)
 
             continue
 
 
         # ----------------------------------------------------
-        # YOLO detection
+        # YOLO DETECTION
         # ----------------------------------------------------
 
         results = model(
+
             frame,
+
             conf=CONFIDENCE_THRESHOLD,
+
             verbose=False
+
         )
 
 
         # ----------------------------------------------------
-        # Person count
+        # PERSON COUNT
         # ----------------------------------------------------
 
         person_count = 0
@@ -230,20 +285,100 @@ def run_yolo():
 
             for box in result.boxes:
 
-                class_id = int(box.cls[0])
+                class_id = int(
+                    box.cls[0]
+                )
+
 
                 # COCO class 0 = person
 
                 if class_id == 0:
+
                     person_count += 1
 
+
         # ----------------------------------------------------
-        # Display person count on video
+        # DRAW YOLO RESULTS
+        # ----------------------------------------------------
+
+        annotated_frame = frame.copy()
+
+
+        for result in results:
+
+            for box in result.boxes:
+
+                class_id = int(
+                    box.cls[0]
+                )
+
+
+                if class_id != 0:
+
+                    continue
+
+
+                confidence = float(
+                    box.conf[0]
+                )
+
+
+                x1, y1, x2, y2 = map(
+                    int,
+                    box.xyxy[0]
+                )
+
+
+                # Draw bounding box
+
+                cv2.rectangle(
+
+                    annotated_frame,
+
+                    (x1, y1),
+
+                    (x2, y2),
+
+                    (0, 255, 0),
+
+                    2
+
+                )
+
+
+                # Person label
+
+                label = (
+                    f"Person {confidence:.2f}"
+                )
+
+
+                cv2.putText(
+
+                    annotated_frame,
+
+                    label,
+
+                    (x1, max(y1 - 10, 20)),
+
+                    cv2.FONT_HERSHEY_SIMPLEX,
+
+                    0.6,
+
+                    (0, 255, 0),
+
+                    2
+
+                )
+
+
+        # ----------------------------------------------------
+        # DISPLAY PERSON COUNT
         # ----------------------------------------------------
 
         cv2.putText(
 
-            frame,
+            annotated_frame,
 
             f"People Count: {person_count}",
 
@@ -256,11 +391,12 @@ def run_yolo():
             (0, 255, 0),
 
             2
+
         )
 
 
         # ----------------------------------------------------
-        # Update shared data
+        # UPDATE SHARED DATA
         # ----------------------------------------------------
 
         last_person_count = person_count
@@ -268,69 +404,91 @@ def run_yolo():
 
         with frame_lock:
 
-            latest_frame = frame.copy()
+            latest_frame = annotated_frame.copy()
 
 
         # ----------------------------------------------------
-        # Send count to backend every 10 seconds
+        # SEND COUNT TO BACKEND
         # ----------------------------------------------------
 
         current_time = time.time()
 
 
-        if current_time - last_sent_time >= SEND_INTERVAL:
+        if (
+            current_time - last_sent_time
+            >= SEND_INTERVAL
+        ):
 
-            send_person_count(person_count)
+            send_person_count(
+                person_count
+            )
 
             last_sent_time = current_time
 
 
 # ============================================================
-# Main
+# MAIN
 # ============================================================
 
 if __name__ == "__main__":
 
     print()
-    print("======================================")
-    print(" Smart Room YOLO Camera Service")
-    print("======================================")
-    print()
 
     print(
-        f"Camera       : {CAMERA_INDEX}"
+        "Camera Input :",
+        CAMERA_SOURCE
     )
 
     print(
-        f"Stream       : "
+        "YOLO Model   :",
+        MODEL_PATH
+    )
+
+    print(
+        "Backend      :",
+        BACKEND_URL
+    )
+
+    print(
+        "Room         :",
+        ROOM_ID
+    )
+
+    print(
+        "Output Stream:",
         f"http://localhost:{STREAM_PORT}/stream"
     )
 
-    print(
-        f"Backend      : {BACKEND_URL}"
-    )
-
-    print(
-        f"Room         : {ROOM_ID}"
-    )
-
     print()
 
-    print("Starting YOLO...")
+    print("Starting YOLO processing...")
 
-    # Start YOLO in background thread
+
+    # --------------------------------------------------------
+    # START YOLO THREAD
+    # --------------------------------------------------------
 
     yolo_thread = threading.Thread(
 
         target=run_yolo,
 
         daemon=True
+
     )
 
     yolo_thread.start()
 
 
-    print("YOLO processing started.")
+    print(
+        "YOLO processing started."
+    )
+
+
+    # --------------------------------------------------------
+    # START FLASK SERVER
+    # --------------------------------------------------------
+
+    print()
 
     print(
         f"Starting MJPEG server on "
@@ -338,9 +496,6 @@ if __name__ == "__main__":
     )
 
     print()
-
-
-    # Start Flask
 
     app.run(
 
@@ -353,4 +508,5 @@ if __name__ == "__main__":
         debug=False,
 
         use_reloader=False
+
     )

@@ -36,7 +36,7 @@ default database is in-memory, so there is no MySQL step until you want persiste
 Three terminals:
 
 ```bash
-# 1 - backend  (http://localhost:8080)
+# 1 - backend  (http://localhost:8081)
 cd backend
 ./mvnw spring-boot:run          # Windows: .\mvnw.cmd spring-boot:run
 

@@ -47,7 +47,7 @@ import urllib.request
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
-DEFAULT_BASE_URL = "http://localhost:8080"
+DEFAULT_BASE_URL = "http://localhost:8081"
 DEFAULT_API_KEY = "smart-room-dev-key"
 DEFAULT_ROOM = "ROOM101"
 
